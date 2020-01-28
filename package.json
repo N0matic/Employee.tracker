@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/N0matic/Employee.tracker/issues"
   },
-  "homepage": "https://github.com/N0matic/Employee.tracker#readme"
+  "homepage": "https://github.com/N0matic/Employee.tracker#readme",
+  "dependencies": {
+    "inquirer": "^7.0.4"
+  }
 }
