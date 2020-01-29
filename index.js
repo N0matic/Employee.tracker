@@ -1,7 +1,7 @@
 // -------------------------------------------
-// -- NPM Databases
+// -- NPM Databases & Connect Functions
 // -------------------------------------------
-require("dotenv").config();
+// require("dotenv").config();
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
@@ -9,14 +9,15 @@ const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
-    database: "great_bay_db",
-    password: process.env.DB_PASSWORD
+    database: "companyDB",
+    password: "Excusably-Widely-Salutary",
+    // password: process.env.DB_PASSWORD
 })
 
 connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadID);
-    mainMenu();
+    mainMenu()
 })
 
 // ---------------------------------------------------
@@ -26,35 +27,38 @@ connection.connect(function (err) {
 // ---------------------------------------------------
 function mainMenu() {
     inquirer
-        .prompt([{
-            type: "list",
-            name: "action",
-            message: "What would you like to do?",
-            choices: [
-                "Add departments, roles, employees",
-                "View departments, roles, employees",
-                "Update employee roles"
-            ]
-
-        }]).then(function (response) {
+        .prompt(
+            [{
+                type: "list",
+                name: "action",
+                message: "What would you like to do?",
+                choices: [
+                    "Add departments, roles, employees",
+                    "View departments, roles, employees",
+                    "Update employee roles",
+                    "Exit"
+                ]
+            }]
+        ).then(function (response) {
             if (response.action === "Add departments, roles, employees") {
-                console.log(response.action + " selected!");
-                addInfo();
+                console.log(response.action + " selected!")
+                addInfo()
             }
             else if (response.action === "View departments, roles, employees") {
-                console.log(response.action + " selected!");
-                viewInfo();
+                console.log(response.action + " selected!")
+                viewInfo()
             }
             else if (response.action === "Update employee roles") {
-                console.log(response.action + " selected!");
-                updateInfo();
+                console.log(response.action + " selected!")
+                updateInfo()
             }
             else if (response.action === "Exit") {
-                console.log("Thank you for using Employee Tracker!");
-                connection.end();
+                console.log("Thank you for using Employee Tracker!")
+                connection.end()
             }
         })
 }
+mainMenu();
 
 // ---------------------------------------------------
 // ---------------------------------------------------
@@ -119,14 +123,14 @@ inquirer.prompt(
         message: "What is the ID of this emplyee's Manager?"
     }]
     // Function to Create Employee based on answers        
-).then(function (data) {
+).then(data => {
     console.log("Creating a new Employee...\n");
     var query = connection.query(
         "INSERT INTO employees SET ?",
         data,
         function (err, res) {
             if (err) throw err;
-            console.table(res.affectedRows + "Employee created!\n");
+            console.table(res.affectedRows + "employee created!\n");
             addInfo();
         }
     );
@@ -155,14 +159,14 @@ inquirer.prompt(
     ]
 
     // Function to Create role based on answers        
-).then(function (data) {
+).then(data => {
     console.log("Creating a new role...\n");
     var query = connection.query(
         "INSERT INTO roles SET ?",
         data,
         function (err, res) {
             if (err) throw err;
-            console.table(res.affectedRows + "Post created!\n");
+            console.table(res.affectedRows + "role created!\n");
             addInfo();
         }
     );
@@ -181,14 +185,14 @@ inquirer.prompt(
     ]
 
     // Function to Create role based on answers        
-).then(function (data) {
+).then(data => {
     console.log("Creating a new department...\n");
     var query = connection.query(
         "INSERT INTO department SET ?",
         data,
         function (err, res) {
             if (err) throw err;
-            console.table(res.affectedRows + "Post created!\n");
+            console.table(res.affectedRows + "department created!\n");
             addInfo();
         }
     );
@@ -237,22 +241,23 @@ function viewInfo() {
 // ---------------------------------------------------
 function viewDeps() {
     console.table(departments)
-    viewInfo
+    viewInfo()
 };
 // ---------------------------------------------------
 // -- View roles
 // ---------------------------------------------------
 function viewRoles() {
     console.table(roles)
-    viewInfo
+    viewInfo()
 }
 // ---------------------------------------------------
 // -- View employees
 // ---------------------------------------------------
 function viewEmps() {
     console.table(employees)
-    viewInfo
+    viewInfo()
 }
+
 
 // ---------------------------------------------------
 // ---------------------------------------------------
@@ -292,6 +297,7 @@ function updateInfo() {
         })
 }
 
+
 // ---------------------------------------------------
 // -- Update departments
 // ---------------------------------------------------
@@ -304,7 +310,7 @@ function updateDeps() {
                 message: "choose a department to update",
                 choices: [`departments`]
             }]
-        ).then(answer =>
+        ).then(departments =>
             inquirer
                 .prompt(
                     [{
@@ -312,12 +318,19 @@ function updateDeps() {
                         name: "rename_department",
                         message: "Input a new name for this department",
                     }])
-        ).then(response => {
-            console.log("New name: " + response.rename_department);
-            updateInfo();
-        }
-        )
-};
+        ).then(data => {
+            console.log("Updating" + data.rename_department + "department...\n");
+            var query = connection.query(
+                "INSERT INTO departments SET ?",
+                data,
+                function (err, res) {
+                    if (err) throw err;
+                    console.table(res.affectedRows + "department created!\n");
+                    updateInfo();
+                }
+            );
+        });
+}
 
 // ---------------------------------------------------
 // -- Update roles
@@ -331,7 +344,7 @@ function updateRoles() {
                 message: "choose a role to update",
                 choices: [`role`]
             }]
-        ).then(answer =>
+        ).then(role =>
             inquirer
                 .prompt(
                     [{
@@ -349,25 +362,20 @@ function updateRoles() {
                         name: "department_id",
                         message: "What is this role's department?"
                     }])
-        ).then(response => {
-            if (response.action === "title") {
-                console.log(response.action + " selected!");
-                updateDeps();
-            }
-            else if (response.action === "salary") {
-                console.log(response.action + " selected!");
-                updateRoles();
-            }
-            else if (response.action === "department_id") {
-                console.log(response.action + " selected!");
-                updateEmps();
-            }
-            console.log("New role: " + response.title + "New salary: " + response.salary + "New department ID: " + response.department_id);
-        }).then(response =>
-            console.table(roles),
-            updateInfo()
-        )
-};
+        ).then(data => {
+            console.log("Updating" + data.title + "role...\n")
+            var query = connection.query(
+                "INSERT INTO roles SET ?",
+                data,
+                function (err, res) {
+                    if (err) throw err
+                    console.table(res.affectedRows + "role created!\n")
+                    updateInfo()
+                }
+            )
+        })
+}
+
 // ---------------------------------------------------
 // -- Update employees
 // ---------------------------------------------------
@@ -380,7 +388,7 @@ function updateEmps() {
                 message: "choose an employee to update",
                 choices: [`employee`]
             }]
-        ).then(answer =>
+        ).then(employee =>
             inquirer
                 .prompt(
                     [{
@@ -403,22 +411,17 @@ function updateEmps() {
                         name: "manager_id",
                         message: "What is the ID of this emplyee's Manager?"
                     }])
-        ).then(response => {
-            if (response.action === "title") {
-                console.log(response.action + " selected!");
-                updateDeps();
-            }
-            else if (response.action === "salary") {
-                console.log(response.action + " selected!");
-                updateRoles();
-            }
-            else if (response.action === "department_id") {
-                console.log(response.action + " selected!");
-                updateEmps();
-            }
-            console.log("New role: " + response.title + "New salary: " + response.salary + "New department ID: " + response.department_id);
-        }).then(response =>
-            console.table(roles),
-            updateInfo()
-        )
-};
+        ).then(data => {
+            console.log("Updating" + data.first_name + " " + data.last_name + "'s role...\n")
+            var query = connection.query(
+                "INSERT INTO employees SET ?",
+                data,
+                function (err, res) {
+                    if (err) throw err
+                    console.table(res.affectedRows + "role created!\n")
+                    updateInfo()
+                }
+            )
+        })
+}
+// console.log("New role: " + response.title + "New salary: " + response.salary + "New department ID: " + response.department_id)
