@@ -39,15 +39,15 @@ function mainMenu() {
         }]).then(function (response) {
             if (response.action === "Add departments, roles, employees") {
                 console.log(response.action + " selected!");
-                addDepart();
+                addInfo();
             }
             else if (response.action === "View departments, roles, employees") {
                 console.log(response.action + " selected!");
-                addRoles();
+                viewInfo();
             }
             else if (response.action === "Update employee roles") {
                 console.log(response.action + " selected!");
-                addEmployees();
+                updateInfo();
             }
             else if (response.action === "Exit") {
                 console.log("Thank you for using Employee Tracker!");
@@ -70,25 +70,26 @@ function addInfo() {
             choices: [
                 "departments",
                 "roles",
-                "employees"
+                "employees",
+                "back"
             ]
 
         }]).then(function (response) {
             if (response.action === "department") {
                 console.log(response.action + " selected!");
-                addInfo();
+                addDep();
             }
             else if (response.action === "role") {
                 console.log(response.action + " selected!");
-                viewInfo();
+                addRole();
             }
             else if (response.action === "employee") {
                 console.log(response.action + " selected!");
-                updateInfo();
+                addEmp();
             }
-            else if (response.action === "Exit") {
-                console.log("Thank you for using Employee Tracker!");
-                connection.end();
+            else if (response.action === "back") {
+                console.log("back to main menu");
+                mainMenu()
             }
         })
 }
@@ -97,39 +98,36 @@ function addInfo() {
 // -- Add Employee Information
 // -------------------------------------------
 inquirer.prompt(
-    [
-        {
-            type: "input",
-            name: "first_name",
-            message: "What is this emplyee's name?"
-        },
-        {
-            type: "input",
-            name: "last_name",
-            message: "What is this emplyee's name?"
-        },
-        {
-            type: "input",
-            name: "role_id",
-            message: "What is this emplyee's role?"
-        },
-        {
-            type: "input",
-            name: "manager_id",
-            message: "What is the ID of this emplyee's Manager?"
-        },
-    ]
-
+    [{
+        type: "input",
+        name: "first_name",
+        message: "What is this emplyee's first name?"
+    },
+    {
+        type: "input",
+        name: "last_name",
+        message: "What is this emplyee's last name?"
+    },
+    {
+        type: "input",
+        name: "role_id",
+        message: "What is this emplyee's role?"
+    },
+    {
+        type: "input",
+        name: "manager_id",
+        message: "What is the ID of this emplyee's Manager?"
+    }]
     // Function to Create Employee based on answers        
 ).then(function (data) {
-    console.log("Creating a new Post...\n");
+    console.log("Creating a new Employee...\n");
     var query = connection.query(
-        "INSERT INTO posts SET ?",
+        "INSERT INTO employees SET ?",
         data,
         function (err, res) {
             if (err) throw err;
-            console.log(res.affectedRows + "Post created!\n");
-            mainMenu();
+            console.table(res.affectedRows + "Employee created!\n");
+            addInfo();
         }
     );
 });
@@ -158,14 +156,14 @@ inquirer.prompt(
 
     // Function to Create role based on answers        
 ).then(function (data) {
-    console.log("Creating a new Post...\n");
+    console.log("Creating a new role...\n");
     var query = connection.query(
-        "INSERT INTO posts SET ?",
+        "INSERT INTO roles SET ?",
         data,
         function (err, res) {
             if (err) throw err;
-            console.log(res.affectedRows + "Post created!\n");
-            mainMenu();
+            console.table(res.affectedRows + "Post created!\n");
+            addInfo();
         }
     );
 });
@@ -177,21 +175,250 @@ inquirer.prompt(
     [
         {
             type: "input",
-            name: "title",
+            name: "department",
             message: "What is this department's name?"
         },
     ]
 
     // Function to Create role based on answers        
 ).then(function (data) {
-    console.log("Creating a new Post...\n");
+    console.log("Creating a new department...\n");
     var query = connection.query(
-        "INSERT INTO posts SET ?",
+        "INSERT INTO department SET ?",
         data,
         function (err, res) {
             if (err) throw err;
-            console.log(res.affectedRows + "Post created!\n");
-            mainMenu();
+            console.table(res.affectedRows + "Post created!\n");
+            addInfo();
         }
     );
 });
+
+// ---------------------------------------------------
+// ---------------------------------------------------
+// -- Branching choices to view information
+// ---------------------------------------------------
+// ---------------------------------------------------
+function viewInfo() {
+    inquirer
+        .prompt([{
+            type: "list",
+            name: "action",
+            message: "Would you like to view departments, roles, or employees?",
+            choices: [
+                "departments",
+                "roles",
+                "employees",
+                "back"
+            ]
+
+        }]).then(function (response) {
+            if (response.action === "departments") {
+                console.log(response.action + " selected!");
+                viewDeps();
+            }
+            else if (response.action === "roles") {
+                console.log(response.action + " selected!");
+                viewRoles();
+            }
+            else if (response.action === "employees") {
+                console.log(response.action + " selected!");
+                viewEmps();
+            }
+            else if (response.action === "back") {
+                console.log("back to main menu");
+                mainMenu()
+            }
+        })
+}
+
+// ---------------------------------------------------
+// -- View departments
+// ---------------------------------------------------
+function viewDeps() {
+    console.table(departments)
+    viewInfo
+};
+// ---------------------------------------------------
+// -- View roles
+// ---------------------------------------------------
+function viewRoles() {
+    console.table(roles)
+    viewInfo
+}
+// ---------------------------------------------------
+// -- View employees
+// ---------------------------------------------------
+function viewEmps() {
+    console.table(employees)
+    viewInfo
+}
+
+// ---------------------------------------------------
+// ---------------------------------------------------
+// -- Branching choices to Update information
+// ---------------------------------------------------
+// ---------------------------------------------------
+function updateInfo() {
+    inquirer
+        .prompt([{
+            type: "list",
+            name: "action",
+            message: "Would you like to update departments, roles, or employees?",
+            choices: [
+                "departments",
+                "roles",
+                "employees",
+                "back"
+            ]
+
+        }]).then(function (response) {
+            if (response.action === "departments") {
+                console.log(response.action + " selected!");
+                updateDeps();
+            }
+            else if (response.action === "roles") {
+                console.log(response.action + " selected!");
+                updateRoles();
+            }
+            else if (response.action === "employees") {
+                console.log(response.action + " selected!");
+                updateEmps();
+            }
+            else if (response.action === "back") {
+                console.log("back to main menu");
+                mainMenu()
+            }
+        })
+}
+
+// ---------------------------------------------------
+// -- Update departments
+// ---------------------------------------------------
+function updateDeps() {
+    inquirer
+        .prompt(
+            [{
+                type: "list",
+                name: "departments",
+                message: "choose a department to update",
+                choices: [`departments`]
+            }]
+        ).then(answer =>
+            inquirer
+                .prompt(
+                    [{
+                        type: "input",
+                        name: "rename_department",
+                        message: "Input a new name for this department",
+                    }])
+        ).then(response => {
+            console.log("New name: " + response.rename_department);
+            updateInfo();
+        }
+        )
+};
+
+// ---------------------------------------------------
+// -- Update roles
+// ---------------------------------------------------
+function updateRoles() {
+    inquirer
+        .prompt(
+            [{
+                type: "list",
+                name: "roles",
+                message: "choose a role to update",
+                choices: [`role`]
+            }]
+        ).then(answer =>
+            inquirer
+                .prompt(
+                    [{
+                        type: "input",
+                        name: "title",
+                        message: "What is this role's title?"
+                    },
+                    {
+                        type: "input",
+                        name: "salary",
+                        message: "What is this role's salary?"
+                    },
+                    {
+                        type: "input",
+                        name: "department_id",
+                        message: "What is this role's department?"
+                    }])
+        ).then(response => {
+            if (response.action === "title") {
+                console.log(response.action + " selected!");
+                updateDeps();
+            }
+            else if (response.action === "salary") {
+                console.log(response.action + " selected!");
+                updateRoles();
+            }
+            else if (response.action === "department_id") {
+                console.log(response.action + " selected!");
+                updateEmps();
+            }
+            console.log("New role: " + response.title + "New salary: " + response.salary + "New department ID: " + response.department_id);
+        }).then(response =>
+            console.table(roles),
+            updateInfo()
+        )
+};
+// ---------------------------------------------------
+// -- Update employees
+// ---------------------------------------------------
+function updateEmps() {
+    inquirer
+        .prompt(
+            [{
+                type: "list",
+                name: "employees",
+                message: "choose an employee to update",
+                choices: [`employee`]
+            }]
+        ).then(answer =>
+            inquirer
+                .prompt(
+                    [{
+                        type: "input",
+                        name: "first_name",
+                        message: "What is this emplyee's first name?"
+                    },
+                    {
+                        type: "input",
+                        name: "last_name",
+                        message: "What is this emplyee's last name?"
+                    },
+                    {
+                        type: "input",
+                        name: "role_id",
+                        message: "What is this emplyee's role?"
+                    },
+                    {
+                        type: "input",
+                        name: "manager_id",
+                        message: "What is the ID of this emplyee's Manager?"
+                    }])
+        ).then(response => {
+            if (response.action === "title") {
+                console.log(response.action + " selected!");
+                updateDeps();
+            }
+            else if (response.action === "salary") {
+                console.log(response.action + " selected!");
+                updateRoles();
+            }
+            else if (response.action === "department_id") {
+                console.log(response.action + " selected!");
+                updateEmps();
+            }
+            console.log("New role: " + response.title + "New salary: " + response.salary + "New department ID: " + response.department_id);
+        }).then(response =>
+            console.table(roles),
+            updateInfo()
+        )
+};
