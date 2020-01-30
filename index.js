@@ -111,7 +111,6 @@ function addDep() {
             },
         ]
 
-        // Function to Create role based on answers        
     ).then(data => {
         console.log("Creating a new department...\n");
         connection.query(
@@ -151,7 +150,6 @@ function addRole() {
             },
         ]
 
-        // Function to Create role based on answers        
     ).then(data => {
         console.log("Creating a new role...\n");
         var query = connection.query(
@@ -162,7 +160,7 @@ function addRole() {
                     addInfo();
                 })
                 if (err) throw err;
-                console.table(res.affectedRows + "role created!\n");
+                console.log("role created!\n");
             }
         )
     })
@@ -193,7 +191,7 @@ function addEmp() {
             name: "manager_id",
             message: "What is the ID of this employee's Manager?"
         }]
-        // Function to Create Employee based on answers        
+
     ).then(data => {
         console.log("Creating a new Employee...\n");
         var manager_id = null
@@ -208,7 +206,7 @@ function addEmp() {
                     addInfo();
                 })
                 if (err) throw err;
-                console.table(res.affectedRows + "employee created!\n");
+                console.log("employee created!\n");
             }
         )
     })
@@ -265,15 +263,19 @@ function viewDeps() {
 // -- View roles
 // ---------------------------------------------------
 function viewRoles() {
-    console.table(roles)
-    viewInfo()
+    connection.query("SELECT * FROM roles", function (err, db_data) {
+        console.table(db_data)
+        viewInfo()
+    })
 }
 // ---------------------------------------------------
 // -- View employees
 // ---------------------------------------------------
 function viewEmps() {
-    console.table(employees)
-    viewInfo()
+    connection.query("SELECT * FROM employees", function (err, db_data) {
+        console.table(db_data)
+        viewInfo()
+    })
 }
 
 // ---------------------------------------------------
@@ -340,16 +342,18 @@ function updateDeps() {
                             }])
                 ).then(data => {
                     console.log("Updating" + data.rename_department + "department...\n");
-                    var query = connection.query(
-                        "INSERT INTO departments SET ?",
-                        data,
+                    connection.query(
+                        "INSERT INTO departments (name) VALUES (?)", data.rename_department,
                         function (err, res) {
                             if (err) throw err;
-                            console.table(res.affectedRows + "department created!\n");
-                            updateInfo();
+                            console.log("department updated!\n")
+                            connection.query("SELECT * FROM departments", function (err, db_data) {
+                                console.table(db_data)
+                                updateInfo()
+                            })
                         }
-                    );
-                });
+                    )
+                })
         })
 }
 
@@ -357,43 +361,49 @@ function updateDeps() {
 // -- Update roles
 // ---------------------------------------------------
 function updateRoles() {
-    inquirer
-        .prompt(
-            [{
-                type: "list",
-                name: "roles",
-                message: "choose a role to update",
-                choices: [`role`]
-            }]
-        ).then(role =>
+    var roles = connection.query(
+        "SELECT * roles", function (err, res) {
+            console.log(res)
             inquirer
                 .prompt(
                     [{
-                        type: "input",
-                        name: "title",
-                        message: "What is this role's title?"
-                    },
-                    {
-                        type: "input",
-                        name: "salary",
-                        message: "What is this role's salary?"
-                    },
-                    {
-                        type: "input",
-                        name: "department_id",
-                        message: "What is this role's department?"
-                    }])
-        ).then(data => {
-            console.log("Updating" + data.title + "role...\n")
-            var query = connection.query(
-                "INSERT INTO roles SET ?",
-                data,
-                function (err, res) {
-                    if (err) throw err
-                    console.table(res.affectedRows + "role created!\n")
-                    updateInfo()
-                }
-            )
+                        type: "list",
+                        name: "roles",
+                        message: "choose a role to update",
+                        choices: [res.data]
+                    }]
+                ).then(roles =>
+                    inquirer
+                        .prompt(
+                            [{
+                                type: "input",
+                                name: "title",
+                                message: "What is this role's title?"
+                            },
+                            {
+                                type: "input",
+                                name: "salary",
+                                message: "What is this role's salary?"
+                            },
+                            {
+                                type: "input",
+                                name: "department_id",
+                                message: "What is this role's department?"
+                            }])
+                ).then(data => {
+                    console.log("Updating" + data.title + "role...\n");
+                    connection.query(
+                        "INSERT INTO roles (name) VALUES (?)", data.title,
+                        function (err, res) {
+                            if (err) throw err;
+                            console.log("role updated!\n")
+                            connection.query("SELECT * FROM roles", function (err, db_data) {
+                                console.table(db_data)
+                                updateInfo()
+                            })
+                        }
+                    )
+                })
         })
 }
 
@@ -401,48 +411,53 @@ function updateRoles() {
 // -- Update employees
 // ---------------------------------------------------
 function updateEmps() {
-    inquirer
-        .prompt(
-            [{
-                type: "list",
-                name: "employees",
-                message: "choose an employee to update",
-                choices: [`employee`]
-            }]
-        ).then(employee =>
+    var employees = connection.query(
+        "SELECT * employees", function (err, res) {
+            console.log(res)
             inquirer
                 .prompt(
                     [{
-                        type: "input",
-                        name: "first_name",
-                        message: "What is this emplyee's first name?"
-                    },
-                    {
-                        type: "input",
-                        name: "last_name",
-                        message: "What is this emplyee's last name?"
-                    },
-                    {
-                        type: "input",
-                        name: "role_id",
-                        message: "What is this emplyee's role?"
-                    },
-                    {
-                        type: "input",
-                        name: "manager_id",
-                        message: "What is the ID of this emplyee's Manager?"
-                    }])
-        ).then(data => {
-            console.log("Updating" + data.first_name + " " + data.last_name + "'s role...\n")
-            var query = connection.query(
-                "INSERT INTO employees SET ?",
-                data,
-                function (err, res) {
-                    if (err) throw err
-                    console.table(res.affectedRows + "role created!\n")
-                    updateInfo()
-                }
-            )
+                        type: "list",
+                        name: "employees",
+                        message: "choose an employee to update",
+                        choices: [res.data]
+                    }]
+                ).then(employees =>
+                    inquirer
+                        .prompt(
+                            [{
+                                type: "input",
+                                name: "first_name",
+                                message: "What is this emplyee's first name?"
+                            },
+                            {
+                                type: "input",
+                                name: "last_name",
+                                message: "What is this emplyee's last name?"
+                            },
+                            {
+                                type: "input",
+                                name: "role_id",
+                                message: "What is this emplyee's role?"
+                            },
+                            {
+                                type: "input",
+                                name: "manager_id",
+                                message: "What is the ID of this emplyee's Manager?"
+                            }])
+                ).then(data => {
+                    console.log("Updating" + "employee" + data.first_name + " " + data.last_name + "...\n");
+                    connection.query(
+                        "INSERT INTO employee (name) VALUES (?)", data.title,
+                        function (err, res) {
+                            if (err) throw err;
+                            console.log("employee updated!\n")
+                            connection.query("SELECT * FROM employee", function (err, db_data) {
+                                console.table(db_data)
+                                updateInfo()
+                            })
+                        }
+                    )
+                })
         })
 }
-// console.log("New role: " + response.title + "New salary: " + response.salary + "New department ID: " + response.department_id)
