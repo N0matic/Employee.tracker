@@ -108,7 +108,7 @@ How do you deliver this? Here are some guidelines:
 
 ## Pseudocode
 
-#### dir
+#### directory
 
 
 #### functions:

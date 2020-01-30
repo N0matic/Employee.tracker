@@ -1,6 +1,7 @@
 // -------------------------------------------
 // -- NPM Databases & Connect Functions
 // -------------------------------------------
+
 // require("dotenv").config();
 const mysql = require("mysql");
 const inquirer = require("inquirer");
@@ -9,7 +10,7 @@ const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
-    database: "companyDB",
+    database: "company_db",
     password: "Excusably-Widely-Salutary",
     // password: process.env.DB_PASSWORD
 })
@@ -52,13 +53,12 @@ function mainMenu() {
                 console.log(response.action + " selected!")
                 updateInfo()
             }
-            else if (response.action === "Exit") {
+            else {
                 console.log("Thank you for using Employee Tracker!")
                 connection.end()
             }
         })
 }
-mainMenu();
 
 // ---------------------------------------------------
 // ---------------------------------------------------
@@ -72,9 +72,9 @@ function addInfo() {
             name: "action",
             message: "Add a department, role, or employee?",
             choices: [
-                "departments",
-                "roles",
-                "employees",
+                "department",
+                "role",
+                "employee",
                 "back"
             ]
 
@@ -91,7 +91,7 @@ function addInfo() {
                 console.log(response.action + " selected!");
                 addEmp();
             }
-            else if (response.action === "back") {
+            else {
                 console.log("back to main menu");
                 mainMenu()
             }
@@ -99,104 +99,120 @@ function addInfo() {
 }
 
 // -------------------------------------------
-// -- Add Employee Information
+// -- Add Department Information
 // -------------------------------------------
-inquirer.prompt(
-    [{
-        type: "input",
-        name: "first_name",
-        message: "What is this emplyee's first name?"
-    },
-    {
-        type: "input",
-        name: "last_name",
-        message: "What is this emplyee's last name?"
-    },
-    {
-        type: "input",
-        name: "role_id",
-        message: "What is this emplyee's role?"
-    },
-    {
-        type: "input",
-        name: "manager_id",
-        message: "What is the ID of this emplyee's Manager?"
-    }]
-    // Function to Create Employee based on answers        
-).then(data => {
-    console.log("Creating a new Employee...\n");
-    var query = connection.query(
-        "INSERT INTO employees SET ?",
-        data,
-        function (err, res) {
-            if (err) throw err;
-            console.table(res.affectedRows + "employee created!\n");
-            addInfo();
-        }
-    );
-});
+function addDep() {
+    inquirer.prompt(
+        [
+            {
+                type: "input",
+                name: "department",
+                message: "What is this department's name?"
+            },
+        ]
+
+        // Function to Create role based on answers        
+    ).then(data => {
+        console.log("Creating a new department...\n");
+        connection.query(
+            "INSERT INTO departments (name) VALUES (?)", data.department,
+            function (err, res) {
+                if (err) throw err;
+                console.log("department created!\n")
+                connection.query("SELECT * FROM departments", function (err, db_data) {
+                    console.table(db_data)
+                    addInfo();
+                })
+            }
+        )
+    })
+}
 
 // -------------------------------------------
 // -- Add Role Information
 // -------------------------------------------
-inquirer.prompt(
-    [
-        {
-            type: "input",
-            name: "title",
-            message: "What is this role's title?"
-        },
-        {
-            type: "input",
-            name: "salary",
-            message: "What is this role's salary?"
-        },
-        {
-            type: "input",
-            name: "department_id",
-            message: "What is this role's department?"
-        },
-    ]
+function addRole() {
+    inquirer.prompt(
+        [
+            {
+                type: "input",
+                name: "title",
+                message: "What is this role's title?"
+            },
+            {
+                type: "input",
+                name: "salary",
+                message: "What is this role's salary?"
+            },
+            {
+                type: "input",
+                name: "department_id",
+                message: "What is this role's department?"
+            },
+        ]
 
-    // Function to Create role based on answers        
-).then(data => {
-    console.log("Creating a new role...\n");
-    var query = connection.query(
-        "INSERT INTO roles SET ?",
-        data,
-        function (err, res) {
-            if (err) throw err;
-            console.table(res.affectedRows + "role created!\n");
-            addInfo();
-        }
-    );
-});
+        // Function to Create role based on answers        
+    ).then(data => {
+        console.log("Creating a new role...\n");
+        var query = connection.query(
+            "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [data.title, data.salary, data.department_id],
+            function (err, res) {
+                connection.query("SELECT * FROM roles", function (err, db_data) {
+                    console.table(db_data)
+                    addInfo();
+                })
+                if (err) throw err;
+                console.table(res.affectedRows + "role created!\n");
+            }
+        )
+    })
+}
 
 // -------------------------------------------
-// -- Add Department Information
+// -- Add Employee Information
 // -------------------------------------------
-inquirer.prompt(
-    [
+function addEmp() {
+    inquirer.prompt(
+        [{
+            type: "input",
+            name: "first_name",
+            message: "What is this emplyee's first name?"
+        },
         {
             type: "input",
-            name: "department",
-            message: "What is this department's name?"
+            name: "last_name",
+            message: "What is this emplyee's last name?"
         },
-    ]
-
-    // Function to Create role based on answers        
-).then(data => {
-    console.log("Creating a new department...\n");
-    var query = connection.query(
-        "INSERT INTO department SET ?",
-        data,
-        function (err, res) {
-            if (err) throw err;
-            console.table(res.affectedRows + "department created!\n");
-            addInfo();
+        {
+            type: "input",
+            name: "role_id",
+            message: "What is this emplyee's role?"
+        },
+        {
+            type: "input",
+            name: "manager_id",
+            message: "What is the ID of this employee's Manager?"
+        }]
+        // Function to Create Employee based on answers        
+    ).then(data => {
+        console.log("Creating a new Employee...\n");
+        var manager_id = null
+        if (data.manager_id) {
+            manager_id = data.manager_id
         }
-    );
-});
+        connection.query(
+            "INSERT INTO employees (first_name, last_name, role_id, manager_id) Values (?, ?, ?, ?)", [data.first_name, data.last_name, data.role_id, manager_id],
+            function (err, res) {
+                connection.query("SELECT * FROM employees", function (err, db_data) {
+                    console.table(db_data)
+                    addInfo();
+                })
+                if (err) throw err;
+                console.table(res.affectedRows + "employee created!\n");
+            }
+        )
+    })
+}
 
 // ---------------------------------------------------
 // ---------------------------------------------------
@@ -229,7 +245,7 @@ function viewInfo() {
                 console.log(response.action + " selected!");
                 viewEmps();
             }
-            else if (response.action === "back") {
+            else {
                 console.log("back to main menu");
                 mainMenu()
             }
@@ -240,9 +256,11 @@ function viewInfo() {
 // -- View departments
 // ---------------------------------------------------
 function viewDeps() {
-    console.table(departments)
-    viewInfo()
-};
+    connection.query("SELECT * FROM departments", function (err, db_data) {
+        console.table(db_data)
+        viewInfo()
+    })
+}
 // ---------------------------------------------------
 // -- View roles
 // ---------------------------------------------------
@@ -257,7 +275,6 @@ function viewEmps() {
     console.table(employees)
     viewInfo()
 }
-
 
 // ---------------------------------------------------
 // ---------------------------------------------------
@@ -290,7 +307,7 @@ function updateInfo() {
                 console.log(response.action + " selected!");
                 updateEmps();
             }
-            else if (response.action === "back") {
+            else {
                 console.log("back to main menu");
                 mainMenu()
             }
@@ -302,34 +319,38 @@ function updateInfo() {
 // -- Update departments
 // ---------------------------------------------------
 function updateDeps() {
-    inquirer
-        .prompt(
-            [{
-                type: "list",
-                name: "departments",
-                message: "choose a department to update",
-                choices: [`departments`]
-            }]
-        ).then(departments =>
+    var departments = connection.query(
+        "SELECT * departments", function (err, res) {
+            console.log(res)
             inquirer
                 .prompt(
                     [{
-                        type: "input",
-                        name: "rename_department",
-                        message: "Input a new name for this department",
-                    }])
-        ).then(data => {
-            console.log("Updating" + data.rename_department + "department...\n");
-            var query = connection.query(
-                "INSERT INTO departments SET ?",
-                data,
-                function (err, res) {
-                    if (err) throw err;
-                    console.table(res.affectedRows + "department created!\n");
-                    updateInfo();
-                }
-            );
-        });
+                        type: "list",
+                        name: "departments",
+                        message: "choose a department to update",
+                        choices: [res.data]
+                    }]
+                ).then(departments =>
+                    inquirer
+                        .prompt(
+                            [{
+                                type: "input",
+                                name: "rename_department",
+                                message: "Input a new name for this department",
+                            }])
+                ).then(data => {
+                    console.log("Updating" + data.rename_department + "department...\n");
+                    var query = connection.query(
+                        "INSERT INTO departments SET ?",
+                        data,
+                        function (err, res) {
+                            if (err) throw err;
+                            console.table(res.affectedRows + "department created!\n");
+                            updateInfo();
+                        }
+                    );
+                });
+        })
 }
 
 // ---------------------------------------------------
