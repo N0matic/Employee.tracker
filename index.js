@@ -2,7 +2,8 @@
 // -- NPM Databases & Connect Functions
 // -------------------------------------------
 
-// require("dotenv").config();
+require("dotenv").config();
+
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
@@ -11,12 +12,13 @@ const connection = mysql.createConnection({
     port: 3306,
     user: "root",
     database: "company_db",
-    password: "Excusably-Widely-Salutary",
-    // password: process.env.DB_PASSWORD
+    password: "Excusably-Widely-Salutary"
+    // process.env.DB_PASSWORD
 })
 
 connection.connect(function (err) {
-    if (err) throw err;
+    if (err) throw err,
+        console.log(err);
     console.log("connected as id " + connection.threadID);
     mainMenu()
 })
@@ -36,7 +38,7 @@ function mainMenu() {
                 choices: [
                     "Add departments, roles, employees",
                     "View departments, roles, employees",
-                    "Update employee roles",
+                    "Update departments, roles, employees",
                     "Exit"
                 ]
             }]
@@ -49,7 +51,7 @@ function mainMenu() {
                 console.log(response.action + " selected!")
                 viewInfo()
             }
-            else if (response.action === "Update employee roles") {
+            else if (response.action === "Update departments, roles, employees") {
                 console.log(response.action + " selected!")
                 updateInfo()
             }
@@ -321,38 +323,51 @@ function updateInfo() {
 // -- Update departments
 // ---------------------------------------------------
 function updateDeps() {
+    var userChoice = ""
     var departments = connection.query(
-        "SELECT * departments", function (err, res) {
-            console.log(res)
+        "SELECT * FROM departments", function (err, res) {
+            var department_names = []
+            for (let i = 0; i < res.length; i++) {
+                department_names.push(res[i].name)
+            }
+
             inquirer
                 .prompt(
                     [{
                         type: "list",
                         name: "departments",
                         message: "choose a department to update",
-                        choices: [res.data]
+                        choices: department_names
                     }]
-                ).then(departments =>
-                    inquirer
-                        .prompt(
-                            [{
-                                type: "input",
-                                name: "rename_department",
-                                message: "Input a new name for this department",
-                            }])
-                ).then(data => {
-                    console.log("Updating" + data.rename_department + "department...\n");
-                    connection.query(
-                        "INSERT INTO departments (name) VALUES (?)", data.rename_department,
-                        function (err, res) {
-                            if (err) throw err;
-                            console.log("department updated!\n")
-                            connection.query("SELECT * FROM departments", function (err, db_data) {
-                                console.table(db_data)
-                                updateInfo()
-                            })
-                        }
-                    )
+                ).then(result => {
+                    console.log('reesult in second .then!!!', result);
+                    userChoice = result.departments,
+                        inquirer
+                            .prompt(
+                                [{
+                                    type: "input",
+                                    name: "rename_department",
+                                    message: "Input a new name for the " + result.departments + " department",
+                                }]).then(data => {
+                                    console.log("New name: " + data.rename_department + " department\n");
+                                    var queryId
+                                    for (let i = 0; i < res.length; i++) {
+                                        if (res[i].name === userChoice) {
+                                            queryId = res[i].id
+                                        }
+                                    }
+                                    connection.query(
+                                        "UPDATE departments SET name = ? WHERE id = ?", [data.rename_department, queryId],
+                                        function (err, res) {
+                                            if (err) throw err;
+                                            console.log(data.rename_department + " department updated!\n")
+                                            connection.query("SELECT * FROM departments", function (err, db_data) {
+                                                console.table(db_data)
+                                                updateInfo()
+                                            })
+                                        }
+                                    )
+                                })
                 })
         })
 }

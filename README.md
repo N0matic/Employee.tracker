@@ -108,8 +108,11 @@ How do you deliver this? Here are some guidelines:
 
 ## Pseudocode
 
-#### directory
+#### To DO
 
+- homescreen console.table with:
+    Join tables
+- Forgeign keys
 
 #### functions:
 
