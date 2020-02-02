@@ -190,9 +190,9 @@ function addRole() {
 function addEmp() {
     // Here we prepare the questions by gathering the role names for future use
     connection.query("SELECT * FROM roles", function (err, res) {
-        var role_names = []
+        var role_titles = []
         for (let i = 0; i < res.length; i++) {
-            role_names.push(res[i].title)
+            role_titles.push(res[i].title)
         }
         console.log("Res check: ", res)
 
@@ -211,7 +211,7 @@ function addEmp() {
                 type: "list",
                 name: "role_id",
                 message: "What is this emplyee's role?",
-                choices: role_names
+                choices: role_titles
             },
             {
                 type: "input",
@@ -355,6 +355,7 @@ function updateInfo() {
 // -- Update departments
 // ---------------------------------------------------
 function updateDeps() {
+    // Start by preparing the department names 
     var userChoice = ""
     var departments = connection.query(
         "SELECT * FROM departments", function (err, res) {
@@ -372,7 +373,6 @@ function updateDeps() {
                         choices: department_names
                     }]
                 ).then(result => {
-                    console.log('reesult in second .then!!!', result);
                     userChoice = result.departments,
                         inquirer
                             .prompt(
@@ -380,26 +380,27 @@ function updateDeps() {
                                     type: "input",
                                     name: "rename_department",
                                     message: "Input a new name for the " + result.departments + " department",
-                                }]).then(data => {
-                                    console.log("New name: " + data.rename_department + " department\n");
-                                    var queryId
-                                    for (let i = 0; i < res.length; i++) {
-                                        if (res[i].name === userChoice) {
-                                            queryId = res[i].id
-                                        }
+                                }]
+                            ).then(data => {
+                                console.log("New name: " + data.rename_department + " department\n");
+                                var queryId
+                                for (let i = 0; i < res.length; i++) {
+                                    if (res[i].name === userChoice) {
+                                        queryId = res[i].id
                                     }
-                                    connection.query(
-                                        "UPDATE departments SET name = ? WHERE id = ?", [data.rename_department, queryId],
-                                        function (err, res) {
-                                            if (err) throw err;
-                                            console.log(data.rename_department + " department updated!\n")
-                                            connection.query("SELECT * FROM departments", function (err, db_data) {
-                                                console.table(db_data)
-                                                updateInfo()
-                                            })
-                                        }
-                                    )
-                                })
+                                }
+                                connection.query(
+                                    "UPDATE departments SET name = ? WHERE id = ?", [data.rename_department, queryId],
+                                    function (err, res) {
+                                        if (err) throw err;
+                                        console.log(data.rename_department + " department updated!\n")
+                                        connection.query("SELECT * FROM departments", function (err, db_data) {
+                                            console.table(db_data)
+                                            updateInfo()
+                                        })
+                                    }
+                                )
+                            })
                 })
         })
 }
@@ -408,16 +409,22 @@ function updateDeps() {
 // -- Update roles
 // ---------------------------------------------------
 function updateRoles() {
+    // Start by preparing the role titles 
+    var userChoice = ""
     var roles = connection.query(
-        "SELECT * roles", function (err, res) {
-            console.log(res)
+        "SELECT * FROM roles", function (err, res) {
+            var role_titles = []
+            for (let i = 0; i < res.length; i++) {
+                role_titles.push(res[i].title)
+            }
+
             inquirer
                 .prompt(
                     [{
                         type: "list",
                         name: "roles",
                         message: "choose a role to update",
-                        choices: [res.data]
+                        choices: role_titles
                     }]
                 ).then(roles =>
                     inquirer
@@ -440,7 +447,7 @@ function updateRoles() {
                 ).then(data => {
                     console.log("Updating" + data.title + "role...\n");
                     connection.query(
-                        "INSERT INTO roles (name) VALUES (?)", data.title,
+                        "INSERT INTO roles SET ? WHERE id = ?", data.title,
                         function (err, res) {
                             if (err) throw err;
                             console.log("role updated!\n")
@@ -453,6 +460,8 @@ function updateRoles() {
                 })
         })
 }
+
+
 
 // ---------------------------------------------------
 // -- Update employees
