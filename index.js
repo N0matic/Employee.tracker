@@ -408,6 +408,7 @@ function updateDeps() {
 // ---------------------------------------------------
 // -- Update roles
 // ---------------------------------------------------
+// Updated Update Role
 function updateRoles() {
     // Start by preparing the role titles 
     var userChoice = ""
@@ -440,12 +441,13 @@ function updateRoles() {
                                 message: "What is this role's salary?"
                             },
                             {
-                                type: "input",
+                                type: "choice",
                                 name: "department_id",
                                 message: "What is this role's department?"
                             }])
                 ).then(data => {
-                    console.log("Updating" + data.title + "role...\n");
+                    userChoice = result.departments,
+                        console.log("Updating" + data.title + "role...\n");
                     connection.query(
                         "INSERT INTO roles SET ? WHERE id = ?", data.title,
                         function (err, res) {
@@ -460,7 +462,6 @@ function updateRoles() {
                 })
         })
 }
-
 
 
 // ---------------------------------------------------
