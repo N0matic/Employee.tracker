@@ -105,3 +105,6 @@ dist
 
 # DS file
 .DS_Store
+
+# Scratchpad
+scratchpad.js

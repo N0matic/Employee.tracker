@@ -354,6 +354,9 @@ function updateInfo() {
 // ---------------------------------------------------
 // -- Update departments
 // ---------------------------------------------------
+// ---------------------------------------------------
+// -- Update departments
+// ---------------------------------------------------
 function updateDeps() {
     // Start by preparing the department names 
     var userChoice = ""
@@ -371,36 +374,31 @@ function updateDeps() {
                         name: "departments",
                         message: "choose a department to update",
                         choices: department_names
+                    },
+                    {
+                        type: "input",
+                        name: "rename_department",
+                        message: result => "Input a new name for the " + result.departments + " department"
                     }]
-                ).then(result => {
-                    userChoice = result.departments,
-                        inquirer
-                            .prompt(
-                                [{
-                                    type: "input",
-                                    name: "rename_department",
-                                    message: "Input a new name for the " + result.departments + " department",
-                                }]
-                            ).then(data => {
-                                console.log("New name: " + data.rename_department + " department\n");
-                                var queryId
-                                for (let i = 0; i < res.length; i++) {
-                                    if (res[i].name === userChoice) {
-                                        queryId = res[i].id
-                                    }
-                                }
-                                connection.query(
-                                    "UPDATE departments SET name = ? WHERE id = ?", [data.rename_department, queryId],
-                                    function (err, res) {
-                                        if (err) throw err;
-                                        console.log(data.rename_department + " department updated!\n")
-                                        connection.query("SELECT * FROM departments", function (err, db_data) {
-                                            console.table(db_data)
-                                            updateInfo()
-                                        })
-                                    }
-                                )
+                ).then(data => {
+                    console.log("New name: " + data.rename_department + " department\n");
+                    var queryId
+                    for (let i = 0; i < res.length; i++) {
+                        if (res[i].name === userChoice) {
+                            queryId = res[i].id
+                        }
+                    }
+                    connection.query(
+                        "UPDATE departments SET name = ? WHERE id = ?", [data.rename_department, queryId],
+                        function (err, res) {
+                            if (err) throw err;
+                            console.log(data.rename_department + " department updated!\n")
+                            connection.query("SELECT * FROM departments", function (err, db_data) {
+                                console.table(db_data)
+                                updateInfo()
                             })
+                        }
+                    )
                 })
         })
 }

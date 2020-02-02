@@ -1,3 +1,4 @@
+
 // Updated Update Role
 function updateRoles() {
     // Start by preparing the role titles 
@@ -16,85 +17,34 @@ function updateRoles() {
                         name: "roles",
                         message: "choose a role to update",
                         choices: role_titles
+                    },
+                    {
+                        type: "input",
+                        name: "rename_role",
+                        message: result => "Input a new name for the " + result.roles + " department"
+                    }, {
+                        type: "input",
+                        name: "salary",
+                        message: "What is this role's salary?"
+                    },
+                    {
+                        type: "choice",
+                        name: "department_id",
+                        message: "What is this role's department?"
                     }]
-                ).then(roles =>
-                    inquirer
-                        .prompt(
-                            [{
-                                type: "input",
-                                name: "title",
-                                message: "What is this role's title?"
-                            },
-                            {
-                                type: "input",
-                                name: "salary",
-                                message: "What is this role's salary?"
-                            },
-                            {
-                                type: "choice",
-                                name: "department_id",
-                                message: "What is this role's department?"
-                            }])
                 ).then(data => {
-                    userChoice = result.departments,
-                        console.log("Updating" + data.title + "role...\n");
-                    connection.query(
-                        "INSERT INTO roles SET ? WHERE id = ?", data.title,
-                        function (err, res) {
-                            if (err) throw err;
-                            console.log("role updated!\n")
-                            connection.query("SELECT * FROM roles", function (err, db_data) {
-                                console.table(db_data)
-                                updateInfo()
-                            })
+                    console.log("New name: " + data.rename_role + " role\n");
+                    var queryId
+                    for (let i = 0; i < res.length; i++) {
+                        if (res[i].name === userChoice) {
+                            queryId = res[i].id
                         }
-                    )
-                })
-        })
-}
-function updateRoles() {
-    // Start by preparing the role titles 
-    var userChoice = ""
-    var roles = connection.query(
-        "SELECT * FROM roles", function (err, res) {
-            var role_titles = []
-            for (let i = 0; i < res.length; i++) {
-                role_titles.push(res[i].title)
-            }
-
-            inquirer
-                .prompt(
-                    [{
-                        type: "list",
-                        name: "roles",
-                        message: "choose a role to update",
-                        choices: role_titles
-                    }]
-                ).then(roles =>
-                    inquirer
-                        .prompt(
-                            [{
-                                type: "input",
-                                name: "title",
-                                message: "What is this role's title?"
-                            },
-                            {
-                                type: "input",
-                                name: "salary",
-                                message: "What is this role's salary?"
-                            },
-                            {
-                                type: "input",
-                                name: "department_id",
-                                message: "What is this role's department?"
-                            }])
-                ).then(data => {
-                    console.log("Updating" + data.title + "role...\n");
+                    }
                     connection.query(
-                        "INSERT INTO roles SET ? WHERE id = ?", data.title,
+                        "UPDATE role SET title = ?, salary = ?, department_id = ? WHERE id = ?", [data.rename_role, data.salary, data.department_id, queryId],
                         function (err, res) {
                             if (err) throw err;
-                            console.log("role updated!\n")
+                            console.log(data.rename_role + " role updated!\n")
                             connection.query("SELECT * FROM roles", function (err, db_data) {
                                 console.table(db_data)
                                 updateInfo()
