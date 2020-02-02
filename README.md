@@ -6,7 +6,7 @@
 
 ### Demo
 
-![Working Demo](<iframe src="https://giphy.com/embed/hu7Y4ZF9HkWKQPhpBk" width="480" height="200" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/hu7Y4ZF9HkWKQPhpBk">via GIPHY</a></p>)
+[Working Demo](https://giphy.com/embed/hu7Y4ZF9HkWKQPhpBk)
 
 ## Description
 
